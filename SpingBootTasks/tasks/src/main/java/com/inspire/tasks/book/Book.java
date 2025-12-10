@@ -4,13 +4,17 @@ package com.inspire.tasks.book;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.inspire.tasks.user.User;
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "books", uniqueConstraints = {
         @UniqueConstraint(columnNames = "author_name"),
         @UniqueConstraint(columnNames = "title")
 })
+@Getter
+@Setter
 @NoArgsConstructor
 public class Book {
 
@@ -36,46 +40,6 @@ public class Book {
         this.title = title;
         this.authorName = authorName;
         this.description = description;
-        this.userId = userId;
-    }
-
-    Long getId() {
-        return id;
-    }
-
-    void setId(Long id) {
-        this.id = id;
-    }
-
-    String getTitle() {
-        return title;
-    }
-
-    void setTitle(String title) {
-        this.title = title;
-    }
-
-    String getAuthorName() {
-        return authorName;
-    }
-
-    void setAuthorName(String authorName) {
-        this.authorName = authorName;
-    }
-
-    String getDescription() {
-        return description;
-    }
-
-    void setDescription(String description) {
-        this.description = description;
-    }
-
-    public User getAuthor() {
-        return userId;
-    }
-
-    void setAuthor(User userId) {
         this.userId = userId;
     }
 }

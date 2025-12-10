@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class BookSecurity {
 
-    private static final Logger log = LoggerFactory.getLogger(BookSecurity.class);
     @Autowired
     private BookService bookService;
 
@@ -23,7 +22,7 @@ public class BookSecurity {
 
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        if(!book.getAuthor().getUsername().equals(currentUser)){
+        if(!book.getUserId().getUsername().equals(currentUser)){
             log.warn("Unauthorized edit attempt: User {} tried to modify book {}", currentUser, bookId);
             throw new UnauthorizedException("Only the owner can modify this book.");
         }

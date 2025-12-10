@@ -25,38 +25,37 @@ import java.util.Set;
 @RequestMapping("/api/admin")
 public class AdminRestController {
 
-    @Autowired
     PasswordEncoder encoder;
 
-    @Autowired
     RoleRepository roleRepository;
 
     UserService userService;
 
-    @Autowired
     ObjectMapper objectMapper;
 
-    @Autowired
-    public AdminRestController(UserService userService){
+    public AdminRestController(UserService userService, ObjectMapper objectMapper, RoleRepository roleRepository, PasswordEncoder encoder){
         this.userService = userService;
+        this.objectMapper = objectMapper;
+        this.encoder = encoder;
+        this.roleRepository = roleRepository;
     }
 
     @PostConstruct
     public void createAdmin(){
+        if (Boolean.getBoolean("skipPostConstruct")) return; // skip this method if testing
 
-            // Create new user's account
+        // Create new user's account
 
-            if (!userService.existsByUsername("systemAdmin") && !userService.existsByEmail("admin.1@email.com")) {
-                User user = new User("systemAdmin1",
-                        "admin.1@email.com",
-                        encoder.encode("adminPass"));
+        if (!userService.existsByUsername("systemAdmin") && !userService.existsByEmail("admin.1@email.com")) {
+            User user = new User("systemAdmin1",
+                    "admin.1@email.com",
+                    encoder.encode("adminPass"));
+            Role adminRole = roleRepository.findByName(RoleTypes.ROLE_ADMIN)
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 
-                Role adminRole = roleRepository.findByName(RoleTypes.ROLE_ADMIN)
-                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-
-                user.setRoles(Set.of(adminRole));
-                userService.save(user);
-            }
+            user.setRoles(Set.of(adminRole));
+            userService.save(user);
+        }
     }
 
 

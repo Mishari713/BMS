@@ -20,15 +20,14 @@ import java.util.List;
 @Slf4j
 public class BookService {
 
-    private static final Logger log = LoggerFactory.getLogger(BookService.class);
     BookRepository bookRepository;
 
-    @Autowired
     UserService userService;
 
 
-    BookService(BookRepository bookRepository){
+    BookService(BookRepository bookRepository, UserService userService){
         this.bookRepository = bookRepository;
+        this.userService = userService;
     }
 
     public ResponseEntity<?> createBook(@Valid @RequestBody BookRequest bookRequest){
@@ -54,7 +53,7 @@ public class BookService {
 
     ResponseEntity<?> save(Book book) {
         bookRepository.save(book);
-        log.info("Book patch request by user {}", book.getAuthor());
+        log.info("Book patch request by user {}", book.getUserId());
         return ResponseEntity.ok(new MessageResponse(200, "Book updated successfully!"));
     }
 

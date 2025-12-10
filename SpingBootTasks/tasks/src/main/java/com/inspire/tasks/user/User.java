@@ -5,7 +5,9 @@ import com.inspire.tasks.roles.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.*;
 
@@ -14,6 +16,8 @@ import java.util.*;
         @UniqueConstraint(columnNames = "username"),
         @UniqueConstraint(columnNames = "email")
 })
+@Getter
+@Setter
 @NoArgsConstructor
 public class User {
 
@@ -49,45 +53,5 @@ public class User {
         this.username = username;
         this.email = email;
         this.password = password;
-    }
-
-    Long getId() {
-        return id;
-    }
-
-    void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    void setUsername(String username) {
-        this.username = username;
-    }
-
-    String getEmail() {
-        return email;
-    }
-
-    void setEmail(String email) {
-        this.email = email;
-    }
-
-    String getPassword() {
-        return password;
-    }
-
-    void setPassword(String password) {
-        this.password = password;
-    }
-
-    Set<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
     }
 }

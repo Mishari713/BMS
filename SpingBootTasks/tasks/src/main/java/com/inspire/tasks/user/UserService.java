@@ -7,9 +7,9 @@ import com.inspire.tasks.roles.Role;
 import com.inspire.tasks.roles.RoleRepository;
 import com.inspire.tasks.roles.RoleTypes;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,20 +21,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class UserService {
 
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);
     UserRepository userRepository;
 
-    @Autowired
     RoleRepository roleRepository;
 
-    @Autowired
     PasswordEncoder encoder;
 
-
-    UserService(UserRepository userRepository){
+    UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder){
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.encoder = encoder;
     }
 
     public ResponseEntity<?> createUser(@Valid @RequestBody SignupRequest signUpRequest){
@@ -90,7 +89,7 @@ public class UserService {
         return ResponseEntity.ok(new MessageResponse(200, "User registered successfully!"));
     }
 
-    ResponseEntity<?> save(User user) {
+    public ResponseEntity<?> save(User user) {
         userRepository.save(user);
         return ResponseEntity.ok(new MessageResponse(200, "User updated successfully!"));
     }
@@ -102,7 +101,7 @@ public class UserService {
         });
     }
 
-    ResponseEntity<?> deleteById(Long userId) {
+    public ResponseEntity<?> deleteById(Long userId) {
         log.info("Deleting user with id {}", userId);
         userRepository.deleteById(userId);
         return ResponseEntity.ok(new MessageResponse(200, "User has been deleted successfully!"));

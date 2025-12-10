@@ -1,7 +1,6 @@
 package com.inspire.tasks.exception.handler;
 
 import com.inspire.tasks.exception.BadRequestException;
-import com.inspire.tasks.exception.ResourceNotFoundException;
 import com.inspire.tasks.exception.UnauthorizedException;
 import com.inspire.tasks.payload.response.MessageResponse;
 import org.springframework.http.HttpStatus;
@@ -12,12 +11,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<?> handleNotFound(ResourceNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new MessageResponse(404, ex.getMessage()));
-    }
 
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<?> handleUnauthorized(UnauthorizedException ex) {
@@ -33,7 +26,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<?> handleAccessDenied(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new MessageResponse(403, "You don't have the required role to access this URL"));
     }
 

@@ -23,15 +23,14 @@ public class BookRestController {
 
     BookService bookService;
 
-    @Autowired
     ObjectMapper objectMapper;
 
-    @Autowired
     UserService userService;
 
-    @Autowired
-    public BookRestController(BookService bookService){
+    public BookRestController(BookService bookService,     UserService userService,     ObjectMapper objectMapper){
         this.bookService = bookService;
+        this.userService = userService;
+        this.objectMapper = objectMapper;
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('AUTHOR') or hasRole('USER')")
@@ -83,7 +82,7 @@ public class BookRestController {
         ObjectNode patchNode = objectMapper.convertValue(patchPayload, ObjectNode.class);
         bookNode.setAll(patchNode);
         Book patched = objectMapper.convertValue(bookNode, Book.class);
-        patched.setAuthor(book.getAuthor());
+        patched.setUserId(book.getUserId());
         return patched;
     }
 

@@ -1,11 +1,16 @@
 package com.inspire.tasks.roles;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 
 @Entity
 @Table(name = "roles")
 @NoArgsConstructor
+@Setter
+@Getter
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,19 +24,4 @@ public class Role {
         this.name = name;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public RoleTypes getName() {
-        return name;
-    }
-
-    public void setName(RoleTypes name) {
-        this.name = name;
-    }
 }
