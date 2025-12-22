@@ -1,8 +1,8 @@
 package com.inspire.tasks.user;
 
-import com.inspire.tasks.exception.BadRequestException;
-import com.inspire.tasks.payload.request.SignupRequest;
-import com.inspire.tasks.payload.response.MessageResponse;
+import com.inspire.tasks.common.exception.BadRequestException;
+import com.inspire.tasks.auth.dto.SignupRequest;
+import com.inspire.tasks.common.MessageResponse;
 import com.inspire.tasks.roles.Role;
 import com.inspire.tasks.roles.RoleRepository;
 import com.inspire.tasks.roles.RoleTypes;

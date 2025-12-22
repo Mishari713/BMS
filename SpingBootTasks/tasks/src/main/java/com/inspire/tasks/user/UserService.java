@@ -1,15 +1,14 @@
 package com.inspire.tasks.user;
 
-import com.inspire.tasks.exception.BadRequestException;
-import com.inspire.tasks.payload.request.SignupRequest;
-import com.inspire.tasks.payload.response.MessageResponse;
+import com.inspire.tasks.common.exception.BadRequestException;
+import com.inspire.tasks.auth.dto.SignupRequest;
+import com.inspire.tasks.common.MessageResponse;
 import com.inspire.tasks.roles.Role;
 import com.inspire.tasks.roles.RoleRepository;
 import com.inspire.tasks.roles.RoleTypes;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -91,6 +90,9 @@ public class UserService {
 
     public ResponseEntity<?> save(User user) {
         userRepository.save(user);
+
+        log.info("updated the user {}" ,user.getId());
+
         return ResponseEntity.ok(new MessageResponse(200, "User updated successfully!"));
     }
 
@@ -125,5 +127,24 @@ public class UserService {
 
     List<User> findAll() {
         return userRepository.findAll();
+    }
+
+
+    @Transactional
+    public User createUserInternal(String username, String email, String encodedPassword, Set<Role> roles, AuthProvider provider) {
+        if (userRepository.existsByUsername(username)) {
+            throw new BadRequestException("Username already taken");
+        }
+
+        if (userRepository.existsByEmail(email)) {
+            throw new BadRequestException("Email already in use");
+        }
+
+        User user = new User(username.toLowerCase(), email.toLowerCase(), encodedPassword);
+
+        user.setRoles(roles);
+        user.setProvider(provider);
+
+        return userRepository.save(user);
     }
 }

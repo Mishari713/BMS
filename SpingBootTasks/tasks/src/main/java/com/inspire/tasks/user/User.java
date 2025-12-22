@@ -4,6 +4,7 @@ import com.inspire.tasks.book.Book;
 import com.inspire.tasks.roles.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,6 +40,9 @@ public class User {
     @Size(max = 120)
     String password;
 
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",

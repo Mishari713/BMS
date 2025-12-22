@@ -1,9 +1,8 @@
 package com.inspire.tasks.book;
 
 
-import com.inspire.tasks.security.BookSecurity;
 import com.inspire.tasks.user.User;
-import com.inspire.tasks.exception.UnauthorizedException;
+import com.inspire.tasks.common.exception.UnauthorizedException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

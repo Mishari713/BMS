@@ -1,9 +1,9 @@
 package com.inspire.tasks.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.inspire.tasks.exception.handler.GlobalExceptionHandler;
-import com.inspire.tasks.payload.request.SignupRequest;
-import com.inspire.tasks.payload.response.MessageResponse;
+import com.inspire.tasks.common.exception.GlobalExceptionHandler;
+import com.inspire.tasks.auth.dto.SignupRequest;
+import com.inspire.tasks.common.MessageResponse;
 import com.inspire.tasks.roles.RoleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

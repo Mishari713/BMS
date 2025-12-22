@@ -1,14 +1,13 @@
 package com.inspire.tasks.user;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.inspire.tasks.exception.BadRequestException;
-import com.inspire.tasks.payload.request.SignupRequest;
+import com.inspire.tasks.common.exception.BadRequestException;
+import com.inspire.tasks.auth.dto.SignupRequest;
 import com.inspire.tasks.roles.Role;
 import com.inspire.tasks.roles.RoleRepository;
 import com.inspire.tasks.roles.RoleTypes;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;

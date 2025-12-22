@@ -1,8 +1,8 @@
 package com.inspire.tasks.book;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.inspire.tasks.payload.request.BookRequest;
-import com.inspire.tasks.payload.response.MessageResponse;
+import com.inspire.tasks.book.dto.BookRequest;
+import com.inspire.tasks.common.MessageResponse;
 import com.inspire.tasks.user.User;
 import com.inspire.tasks.user.UserService;
 import org.junit.jupiter.api.BeforeEach;

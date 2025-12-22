@@ -2,10 +2,10 @@ package com.inspire.tasks.book;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.inspire.tasks.payload.request.BookRequest;
-import com.inspire.tasks.payload.response.MessageResponse;
+import com.inspire.tasks.book.dto.BookRequest;
+import com.inspire.tasks.book.dto.BookResponse;
+import com.inspire.tasks.common.MessageResponse;
 import com.inspire.tasks.user.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,6 +31,12 @@ public class BookRestController {
         this.bookService = bookService;
         this.userService = userService;
         this.objectMapper = objectMapper;
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('AUTHOR') or hasRole('USER')")
+    @GetMapping("open-library/{bookName}")
+    public BookResponse getBookFromOpenLibrary(@PathVariable String bookName){
+        return bookService.findBookByNameOL(bookName);
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('AUTHOR') or hasRole('USER')")
