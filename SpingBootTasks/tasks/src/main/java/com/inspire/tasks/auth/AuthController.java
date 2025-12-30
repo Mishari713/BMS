@@ -2,7 +2,6 @@ package com.inspire.tasks.auth;
 
 import com.inspire.tasks.common.exception.BadRequestException;
 import com.inspire.tasks.common.exception.UnauthorizedException;
-import com.inspire.tasks.roles.RoleRepository;
 import com.inspire.tasks.auth.dto.LoginRequest;
 import com.inspire.tasks.auth.dto.SignupRequest;
 import com.inspire.tasks.common.MessageResponse;
@@ -20,7 +19,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -37,11 +35,11 @@ public class AuthController {
     @Autowired
     UserRepository userRepository;
 
-    @Autowired
-    RoleRepository roleRepository;
-
-    @Autowired
-    PasswordEncoder encoder;
+//    @Autowired
+//    RoleRepository roleRepository;
+//
+//    @Autowired
+//    PasswordEncoder encoder;
 
     @Autowired
     JwtUtils jwtUtils;

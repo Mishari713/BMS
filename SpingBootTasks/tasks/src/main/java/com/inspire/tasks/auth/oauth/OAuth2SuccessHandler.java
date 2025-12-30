@@ -45,9 +45,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String jwt = jwtUtils.generateTokenFromUsername(user.getUsername());
 
         Cookie jwtCookie = new Cookie("JWT", jwt);
-        jwtCookie.setHttpOnly(false); // must be accessible by JS
+        jwtCookie.setHttpOnly(true);
         jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(3600); // 1 hour
+        jwtCookie.setMaxAge(3600);
         response.addCookie(jwtCookie);
 
         response.sendRedirect("/swagger-ui/index.html");
@@ -62,7 +62,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         user.setEmail(email);
         user.setUsername(name);
         user.setPassword("OAUTH2");
-        user.setProvider(AuthProvider.valueOf(provider.toUpperCase()));
+        AuthProvider authProvider =
+                "google".equalsIgnoreCase(provider) ? AuthProvider.GOOGLE : AuthProvider.LOCAL;
+        user.setProvider(authProvider);
         user.setRoles(Set.of(userRole));
 
         return userRepository.save(user);

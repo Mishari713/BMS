@@ -1,21 +1,19 @@
 package com.inspire.tasks.auth;
 
+import com.inspire.tasks.auth.jwt.AuthTokenFilter;
 import com.inspire.tasks.common.exception.BadRequestException;
 import com.inspire.tasks.common.exception.UnauthorizedException;
-import com.inspire.tasks.common.exception.GlobalExceptionHandler;
 import com.inspire.tasks.common.MessageResponse;
 import com.inspire.tasks.auth.jwt.JwtUtils;
-import com.inspire.tasks.user.UserDetailsImpl;
-import com.inspire.tasks.user.UserService;
+import com.inspire.tasks.user.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-
-import org.mockito.junit.jupiter.MockitoExtension;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
@@ -27,8 +25,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 
 import org.springframework.security.core.Authentication;
 
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,29 +39,36 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(controllers = AuthController.class,
+        excludeFilters = @ComponentScan.Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes = AuthTokenFilter.class
+        )
+)
+@Import(TestSecurityConfig.class)
 class AuthControllerTest {
 
-    private MockMvc mockMvc;
-
-    @Mock
+    @MockitoBean
     AuthenticationManager authenticationManager;
 
-    @Mock
+    @MockitoBean
     JwtUtils jwtUtils;
-    @Mock
+
+    @MockitoBean
     UserService userService;
 
-    @InjectMocks
-    AuthController authController;
+    @MockitoBean
+    UserRepository userRepository;
+
+    @Autowired
+    MockMvc mockMvc;
 
     private Authentication auth;
 
+    private User user;
+
     @BeforeEach
     void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(authController)
-                .setControllerAdvice(new GlobalExceptionHandler())
-                .build();
 
         UserDetailsImpl userDetails = new UserDetailsImpl(
                 1L,
@@ -70,6 +78,10 @@ class AuthControllerTest {
                 null
         );
 
+        user = new User(userDetails.getUsername(),userDetails.getEmail(), userDetails.getPassword());
+
+        user.setProvider(AuthProvider.LOCAL);
+
         auth = new UsernamePasswordAuthenticationToken(
                 userDetails,
                 null,
@@ -77,6 +89,7 @@ class AuthControllerTest {
         );
     }
 
+    @WithMockUser
     @Test
     void signin_Success() throws Exception {
 
@@ -84,6 +97,9 @@ class AuthControllerTest {
 
         ResponseCookie cookie = ResponseCookie.from("jwt", "token").build();
         when(jwtUtils.generateJwtCookie(any())).thenReturn(cookie);
+
+        when(userRepository.findByUsername("john"))
+                .thenReturn(Optional.of(user));
 
         mockMvc.perform(post("/api/auth/signin")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -95,11 +111,14 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.message").value("User logged in successfully!"));
     }
 
+    @WithMockUser
     @Test
     void signin_InvalidCredentials_ThrowsUnauthorized() throws Exception {
 
         when(authenticationManager.authenticate(any()))
                 .thenThrow(new BadCredentialsException("bad credentials"));
+        when(userRepository.findByUsername("john"))
+                .thenReturn(Optional.of(user));
 
         mockMvc.perform(post("/api/auth/signin")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -111,12 +130,14 @@ class AuthControllerTest {
                         assertInstanceOf(UnauthorizedException.class, result.getResolvedException()));
     }
 
+    @WithMockUser
     @Test
     void signin_SecondSessionAttempt_ThrowsBadRequest() throws Exception {
 
-        //-- first successful login --
         when(authenticationManager.authenticate(any())).thenReturn(auth);
         when(jwtUtils.generateJwtCookie(any())).thenReturn(ResponseCookie.from("jwt", "token").build());
+        when(userRepository.findByUsername("john"))
+                .thenReturn(Optional.of(user));
 
         mockMvc.perform(post("/api/auth/signin")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -125,7 +146,6 @@ class AuthControllerTest {
                 """))
                 .andExpect(status().isOk());
 
-        //-- second login should fail --
         mockMvc.perform(post("/api/auth/signin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -136,6 +156,7 @@ class AuthControllerTest {
                         assertInstanceOf(BadRequestException.class, result.getResolvedException()));
     }
 
+    @WithMockUser
     @Test
     void signup_Success() throws Exception {
 
@@ -153,11 +174,13 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.message").value("User registered successfully!"));
     }
 
+    @WithMockUser
     @Test
     void signout_Success() throws Exception {
 
         when(authenticationManager.authenticate(any())).thenReturn(auth);
         when(jwtUtils.generateJwtCookie(any())).thenReturn(ResponseCookie.from("jwt", "token").build());
+        when(userRepository.findByUsername("john"));
 
         mockMvc.perform(post("/api/auth/signin")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -172,6 +195,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.message").value("You've been signed out successfully!"));
     }
 
+    @WithMockUser
     @Test
     void signout_NoActiveSession_ThrowsBadRequest() throws Exception {
 

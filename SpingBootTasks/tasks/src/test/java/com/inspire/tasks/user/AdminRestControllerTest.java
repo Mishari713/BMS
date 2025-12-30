@@ -1,21 +1,24 @@
 package com.inspire.tasks.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.inspire.tasks.common.exception.GlobalExceptionHandler;
+import com.inspire.tasks.auth.TestSecurityConfig;
+import com.inspire.tasks.auth.jwt.AuthTokenFilter;
 import com.inspire.tasks.auth.dto.SignupRequest;
 import com.inspire.tasks.common.MessageResponse;
 import com.inspire.tasks.roles.RoleRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 import java.util.Map;
@@ -27,33 +30,31 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@WebMvcTest(controllers = AdminRestController.class,
+        excludeFilters = @ComponentScan.Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes = AuthTokenFilter.class
+        )
+)
+@Import(TestSecurityConfig.class)
 class AdminRestControllerTest {
 
+    @Autowired
     MockMvc mockMvc;
 
     @Spy
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper;
 
-    @Mock
+    @MockitoBean
     UserService userService;
 
-    @Mock
+    @MockitoBean
     RoleRepository roleRepository;
 
-    @Mock
+    @MockitoBean
     PasswordEncoder encoder;
 
-    @InjectMocks
-    AdminRestController adminRestController;
-
-    @BeforeEach
-    void setup() {
-        MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(adminRestController)
-                .setControllerAdvice(new GlobalExceptionHandler())
-                .build();
-    }
-
+    @WithMockUser(roles = "ADMIN")
     @Test
     void getAllUsers_ReturnsList() throws Exception {
         User u1 = new User();
@@ -73,6 +74,7 @@ class AdminRestControllerTest {
                 .andExpect(jsonPath("$[1].username").value("mary"));
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void createUser_ReturnsSuccess() throws Exception {
         SignupRequest request = new SignupRequest();
@@ -83,18 +85,17 @@ class AdminRestControllerTest {
         MessageResponse msg = new MessageResponse(200, "User registered successfully!");
 
         when(userService.createUser(any(SignupRequest.class)))
-                .thenAnswer(invocation -> {
-                    SignupRequest req = invocation.getArgument(0);
-                    return ResponseEntity.ok(new MessageResponse(200, "User registered successfully!"));
-                });
+                .thenAnswer(invocation ->
+                                ResponseEntity.ok(new MessageResponse(200, "User registered successfully!")));
 
         mockMvc.perform(post("/api/admin/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("User registered successfully!"));
+                .andExpect(jsonPath("$.message").value(msg.getMessage()));
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void updateUser_Success() throws Exception {
         Long userId = 1L;
@@ -105,10 +106,9 @@ class AdminRestControllerTest {
         when(userService.findById(userId)).thenReturn(existing);
 
         when(userService.save(any(User.class)))
-                .thenAnswer(invocation -> {
-                    User u = invocation.getArgument(0); // optionally capture the argument
-                    return ResponseEntity.ok(new MessageResponse(200, "User updated successfully!"));
-                });
+                .thenAnswer(invocation ->
+                    ResponseEntity.ok(new MessageResponse(200, "User updated successfully!")
+                ));
 
 
         Map<String, Object> patch = Map.of("email", "new@mail.com");
@@ -120,6 +120,7 @@ class AdminRestControllerTest {
                 .andExpect(jsonPath("$.message").value("User updated successfully!"));
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void updateUser_Fails_WhenIdInPayload() throws Exception {
         when(userService.findById(1L)).thenReturn(new User());
@@ -133,6 +134,7 @@ class AdminRestControllerTest {
                 .andExpect(jsonPath("$.message", containsString("User id is not allowed")));
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void deleteUser_ReturnsSuccess() throws Exception {
         User u = new User();
@@ -147,6 +149,7 @@ class AdminRestControllerTest {
                 .andExpect(jsonPath("$.message").value("User has been deleted successfully!"));
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void accessDeniedException_Returns403() throws Exception {
         // Arrange
@@ -159,6 +162,7 @@ class AdminRestControllerTest {
                 .andExpect(jsonPath("$.message").value("You don't have the required role to access this URL"));
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void genericException_Returns500() throws Exception {
         // Arrange

@@ -102,7 +102,8 @@ public class BookService {
             JsonNode firstDoc = searchNode.get("docs").get(0);
 
             String workId = firstDoc.get("key").asText().replace("/works/", "");
-            JsonNode workNode = objectMapper.valueToTree(openLibraryService.getWorkById(workId));
+
+            JsonNode workNode = objectMapper.readTree(openLibraryService.getWorkById(workId));
 
             String authors = "";
             JsonNode authorNamesNode = firstDoc.get("author_name");

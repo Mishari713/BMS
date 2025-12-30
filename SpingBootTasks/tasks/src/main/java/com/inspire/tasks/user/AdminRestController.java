@@ -3,10 +3,7 @@ package com.inspire.tasks.user;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.inspire.tasks.common.exception.BadRequestException;
 import com.inspire.tasks.auth.dto.SignupRequest;
-import com.inspire.tasks.roles.Role;
 import com.inspire.tasks.roles.RoleRepository;
-import com.inspire.tasks.roles.RoleTypes;
-import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,7 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -39,23 +35,21 @@ public class AdminRestController {
         this.roleRepository = roleRepository;
     }
 
-    @PostConstruct
-    public void createAdmin(){
-        if (Boolean.getBoolean("skipPostConstruct")) return; // skip this method if testing
-
-        // Create new user's account
-
-        if (!userService.existsByUsername("systemAdmin") && !userService.existsByEmail("admin.1@email.com")) {
-            User user = new User("systemAdmin1",
-                    "admin.1@email.com",
-                    encoder.encode("adminPass"));
-            Role adminRole = roleRepository.findByName(RoleTypes.ROLE_ADMIN)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-
-            user.setRoles(Set.of(adminRole));
-            userService.save(user);
-        }
-    }
+//    @PostConstruct
+//    public void createAdmin(){
+//        // Create new user's account
+//
+//        if (!userService.existsByUsername("systemAdmin") && !userService.existsByEmail("admin.1@email.com")) {
+//            User user = new User("systemAdmin1",
+//                    "admin.1@email.com",
+//                    encoder.encode("adminPass"));
+//            Role adminRole = roleRepository.findByName(RoleTypes.ROLE_ADMIN)
+//                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+//
+//            user.setRoles(Set.of(adminRole));
+//            userService.save(user);
+//        }
+//    }
 
 
     @GetMapping("/users")

@@ -1,5 +1,8 @@
 package com.inspire.tasks.book;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.inspire.tasks.book.client.OpenLibraryService;
+import com.inspire.tasks.book.dto.BookResponse;
 import com.inspire.tasks.common.exception.BadRequestException;
 import com.inspire.tasks.book.dto.BookRequest;
 import com.inspire.tasks.common.MessageResponse;
@@ -9,10 +12,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,13 +27,19 @@ import static org.mockito.Mockito.*;
 class BookServiceTest {
 
     @Mock
-    private BookRepository bookRepository;
+    BookRepository bookRepository;
 
     @Mock
-    private UserService userService;
+    UserService userService;
+
+    @Mock
+    OpenLibraryService openLibraryService;
 
     @InjectMocks
-    private BookService bookService;
+    BookService bookService;
+
+    @Spy
+    ObjectMapper objectMapper;
 
 
     @Test
@@ -49,7 +60,7 @@ class BookServiceTest {
         ResponseEntity<?> response = bookService.createBook(request);
 
         assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody() instanceof MessageResponse);
+        assertInstanceOf(MessageResponse.class, response.getBody());
 
         MessageResponse body = (MessageResponse) response.getBody();
         assertEquals("Book created successfully!", body.getMessage());
@@ -120,7 +131,7 @@ class BookServiceTest {
         ResponseEntity<?> response = bookService.save(book);
 
         assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody() instanceof MessageResponse);
+        assertInstanceOf(MessageResponse.class, response.getBody());
     }
 
     @Test
@@ -149,7 +160,7 @@ class BookServiceTest {
         Book b1 = new Book();
 
         when(bookRepository.findAllByAuthorName("john"))
-                .thenReturn(Arrays.asList(b1));
+                .thenReturn(List.of(b1));
 
         var result = bookService.findAllByAuthorName("john");
 
@@ -169,14 +180,53 @@ class BookServiceTest {
 
     @Test
     void findAllByTitle_NotFound_ThrowsException() {
-        when(bookRepository.findByTitle("missing"))
+        when(bookRepository.findByTitle("Test Book"))
                 .thenReturn(Optional.empty());
 
         BadRequestException ex = assertThrows(
                 BadRequestException.class,
-                () -> bookService.findAllByTitle("missing")
+                () -> bookService.findAllByTitle("Test Book")
         );
 
-        assertEquals("Book title : missing doesn't exists", ex.getMessage());
+        assertEquals("Book title : Test Book doesn't exists", ex.getMessage());
+    }
+
+    @Test
+    void findBookByName_OpenLibrary_Success() {
+        String bookName = "clean code";
+        String searchResponse = """
+        {
+          "docs": [
+            {
+              "key": "/works/OL123W",
+              "author_name": [
+              "Robert C. Martin"
+              ],
+              "title": "Clean Code"
+            }
+          ]
+        }
+        """;
+
+        String workResponse = """
+        {
+          "title": "Clean Code",
+          "description": {
+            "value": "A handbook of agile software craftsmanship."
+          }
+        }
+        """;
+
+        when(openLibraryService.findBookByName(bookName))
+                .thenReturn(searchResponse);
+
+        when(openLibraryService.getWorkById("OL123W"))
+                .thenReturn(workResponse);
+
+        BookResponse response = bookService.findBookByNameOL(bookName);
+
+        assertEquals("Clean Code", response.title());
+        assertEquals("Robert C. Martin", response.authorName());
+        assertEquals("A handbook of agile software craftsmanship.", response.description());
     }
 }
